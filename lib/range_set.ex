@@ -66,9 +66,14 @@ defmodule RangeSet do
   ```elixir
   iex> #{inspect(__MODULE__)}.new([0..2, 6..9]) |> #{inspect(__MODULE__)}.gaps()
   #{inspect(__MODULE__)}.new([3..5])
+
+  iex> #{inspect(__MODULE__)}.new([0..5, 6..9]) |> #{inspect(__MODULE__)}.gaps()
+  #{inspect(__MODULE__)}.new([])
   ```
   """
   @spec gaps(t()) :: t()
+  def gaps(%__MODULE__{ranges: [_range]}), do: %__MODULE__{ranges: []}
+
   def gaps(%__MODULE__{ranges: ranges}) do
     gaps =
       ranges
