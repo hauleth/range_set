@@ -7,9 +7,8 @@ Simple structure for storing set of Elixir's ranges.
 - [x] `Enumberable`
 - [x] `RangeSet.difference/2`
 - [x] `RangeSet.gaps/1`
-- [ ] `RangeSet.intersection/2`
+- [x] `RangeSet.intersection/2`
 - [x] `RangeSet.union/2`
-- 
 
 ## Installation
 

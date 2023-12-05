@@ -116,12 +116,15 @@ defmodule RangeSet do
     do: Enum.reduce(ranges, 0, fn r, acc -> acc + Range.size(r) end)
 
   @doc """
-  Returns list ov values stored in set.
+  Returns list of values stored in set.
   """
   @spec to_list(t()) :: [integer()]
   def to_list(%__MODULE__{ranges: ranges}),
     do: Enum.flat_map(ranges, & &1)
 
+  @doc """
+  Returns difference between sets.
+  """
   @spec difference(t(), t() | integer() | Range.t() | [integer()]) :: t()
   def difference(range_set, other)
 
@@ -179,6 +182,10 @@ defmodule RangeSet do
     %__MODULE__{ranges: ranges}
   end
 
+  @doc """
+  Returns union of sets
+  """
+  @spec union(t(), t()) :: t()
   def union(%__MODULE__{ranges: a}, %__MODULE__{ranges: b}) do
     # TODO: Replace it with `sorted_merge` operation
     union = Enum.sort_by(a ++ b, & &1.first) |> squash()
@@ -202,11 +209,37 @@ defmodule RangeSet do
     do: squash([a..Kernel.max(b, d) | rest])
 
   defp squash([x | rest]), do: [x | squash(rest)]
+
+  @doc """
+  Returns intersection between two sets
+  """
+  @spec intersection(t(), t()) :: t()
+  def intersection(%__MODULE__{ranges: a}, %__MODULE__{ranges: b}) do
+    new(do_intersection(a, b))
+  end
+
+  defp do_intersection(a, b) when [] in [a, b], do: []
+  defp do_intersection([r | xs], [r | ys]), do: [r | do_intersection(xs, ys)]
+  defp do_intersection([_a..b | xs], [c.._d | _] = ys) when b < c, do: do_intersection(xs, ys)
+  defp do_intersection([a.._b | _] = xs, [_c..d | ys]) when a > d, do: do_intersection(xs, ys)
+  defp do_intersection([a..b | xs], [c..d | _] = ys) when a < c and b < d do
+    [c..b | do_intersection(xs, ys)]
+  end
+  defp do_intersection([a..b | _] = xs, [c..d | ys]) when a > c and b > d do
+    [a..d | do_intersection(xs, ys)]
+  end
+  defp do_intersection([a..b | xs], [c..d | _] = ys) when a in c..d and b in c..d do
+    [a..b | do_intersection(xs, ys)]
+  end
+  defp do_intersection([a..b | _] = xs, [c..d | ys]) when c in a..b and d in a..b do
+    [c..d | do_intersection(xs, ys)]
+  end
 end
 
 defimpl Enumerable, for: RangeSet do
-  defdelegate count(set), to: @for, as: :length
-  defdelegate member?(set, value), to: @for
+  def count(set), do: {:ok, @for.length(set)}
+
+  def member?(set, value), do: {:ok, @for.member?(set, value)}
 
   def reduce(_set, {:halt, acc}, _fun), do: {:halted, acc}
   def reduce(set, {:suspend, acc}, fun), do: {:suspended, acc, &reduce(set, &1, fun)}

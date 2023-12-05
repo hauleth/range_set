@@ -6,8 +6,12 @@ defmodule RangeSet.MixProject do
       app: :range_set,
       version: "0.1.0",
       elixir: "~> 1.14",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_coverage: [
+        ignore_modules: [RangeGen]
+      ]
     ]
   end
 
@@ -17,6 +21,9 @@ defmodule RangeSet.MixProject do
       extra_applications: [:logger]
     ]
   end
+
+  defp elixirc_paths(:test), do: ~w[lib test/support]
+  defp elixirc_paths(_), do: ~w[lib]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do

@@ -2,44 +2,77 @@ defmodule RangeSetTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  import RangeGen
+
   @subject RangeSet
 
   doctest @subject
 
-  def range do
-    gen(all(a <- integer(), b <- positive_integer(), do: a..(a + b - 1)))
+  describe "new/1" do
+    property "passing existing set is noop" do
+      check all(set <- range_set()) do
+        assert set == @subject.new(set)
+      end
+    end
   end
 
   describe "empty set" do
     test "empty set is empty" do
       assert @subject.empty?(@subject.new([]))
     end
+
+    property "non-empty set is not empty" do
+      check all(r <- list_of(range(), min_length: 1)) do
+        refute @subject.empty?(@subject.new(r))
+      end
+    end
   end
 
-  describe "union/2" do
-    property "with itself is identity function" do
-      check all(r <- range()) do
-        set = @subject.new(r)
+  describe "min/1" do
+    property "minimum is in range" do
+      check all(p <- range_set(min_length: 1)) do
+        min = @subject.min(p)
 
-        assert set == @subject.union(set, set)
+        assert min in p
       end
     end
 
-    property "with empty set is identity function" do
-      check all(r <- range()) do
-        set = @subject.new(r)
+    property "minimum is less than or equal to all values" do
+      check all(p <- range_set(min_length: 1)) do
+        min = @subject.min(p)
 
-        assert set == @subject.union(set, @subject.new())
+        assert Enum.all?(p, &(min <= &1))
       end
     end
 
-    property "is commutative" do
-      check all(r1 <- range(), r2 <- range()) do
-        p = @subject.new(r1)
-        q = @subject.new(r2)
+    test "on empty callback is called" do
+      ref = make_ref()
 
-        assert @subject.union(q, p) == @subject.union(p, q)
+      assert ref == @subject.min(@subject.new(), fn -> ref end)
+    end
+  end
+
+  describe "max/1" do
+    property "maximum is in range" do
+      check all(p <- range_set(min_length: 1)) do
+        max = @subject.max(p)
+
+        assert max in p
       end
+    end
+
+    property "maximum is greater than or equal to all values" do
+      check all(p <- range_set(min_length: 1)) do
+        max = @subject.max(p)
+
+        assert Enum.all?(p, &(max >= &1))
+      end
+    end
+
+    test "on empty callback is called" do
+      ref = make_ref()
+
+      assert ref == @subject.max(@subject.new(), fn -> ref end)
     end
   end
 
