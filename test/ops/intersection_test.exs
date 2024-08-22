@@ -12,6 +12,17 @@ defmodule Ops.IntersectionTest do
     end
   end
 
+  property "intersection with superset is identity function" do
+    check all(set <- range_set(), not @subject.empty?(set)) do
+      min = @subject.min(set)
+      max = @subject.max(set)
+
+      superset = @subject.new((min - 1)..(max + 1))
+
+      assert set == @subject.intersection(set, superset)
+    end
+  end
+
   property "with empty set result in empty set" do
     check all(set <- range_set()) do
       assert @subject.empty?(@subject.intersection(set, @subject.new()))

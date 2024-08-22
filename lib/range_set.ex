@@ -128,19 +128,7 @@ defmodule RangeSet do
   @spec difference(t(), t() | integer() | Range.t() | [integer()]) :: t()
   def difference(range_set, other)
 
-  def difference(%__MODULE__{ranges: ranges}, int) when is_integer(int) do
-    new_ranges =
-      Enum.flat_map(ranges, fn a..b ->
-        cond do
-          a == int -> [(int + 1)..b]
-          b == int -> [a..(int - 1)]
-          int in a..b -> [a..(int - 1), (int + 1)..b]
-          true -> [a..b]
-        end
-      end)
-
-    %__MODULE__{ranges: new_ranges}
-  end
+  def difference(%__MODULE__{} = set, int) when is_integer(int), do: difference(set, int..int)
 
   def difference(%__MODULE__{ranges: ranges}, c..d//1) when c <= d do
     new_ranges =
@@ -149,7 +137,7 @@ defmodule RangeSet do
           a in c..d and b in c..d -> []
           a < c and b in c..d -> [a..(c - 1)]
           a in c..d and b > d -> [(d + 1)..b]
-          c in a..b and d in a..b -> [a..(c - 1), (d + 1)..b]
+          c > a and d < b -> [a..(c - 1), (d + 1)..b]
           true -> [a..b]
         end
       end)
@@ -176,7 +164,7 @@ defmodule RangeSet do
   def put(%__MODULE__{ranges: ranges}, a..b//1 = range) when a <= b do
     ranges =
       ranges
-      |> insert_sorted(range)
+      |> insert_sorted([range])
       |> squash()
 
     %__MODULE__{ranges: ranges}
@@ -188,19 +176,20 @@ defmodule RangeSet do
   @spec union(t(), t()) :: t()
   def union(%__MODULE__{ranges: a}, %__MODULE__{ranges: b}) do
     # TODO: Replace it with `sorted_merge` operation
-    union = Enum.sort_by(a ++ b, & &1.first) |> squash()
+    union = insert_sorted(a, b) |> squash()
 
     %__MODULE__{ranges: union}
   end
 
   # Insertion step from insertion sort
-  defp insert_sorted([], val), do: [val]
+  defp insert_sorted(val, []), do: val
+  defp insert_sorted([], val), do: val
 
-  defp insert_sorted([a.._ = x | rest], b.._ = y) when a < b,
+  defp insert_sorted([a.._ = x | rest], [b.._ | _] = y) when a < b,
     do: [x | insert_sorted(rest, y)]
 
-  defp insert_sorted(rest, y),
-    do: [y | rest]
+  defp insert_sorted(rest, [y | ys]),
+    do: [y | insert_sorted(rest, ys)]
 
   defp squash([]), do: []
   defp squash([_] = list), do: list
@@ -218,19 +207,42 @@ defmodule RangeSet do
     new(do_intersection(a, b))
   end
 
+  # Finish
   defp do_intersection(a, b) when [] in [a, b], do: []
+
+  # Same set
+  # |---|
+  # |---|
   defp do_intersection([r | xs], [r | ys]), do: [r | do_intersection(xs, ys)]
+
+  # a---b
+  #        c---d
   defp do_intersection([_a..b | xs], [c.._d | _] = ys) when b < c, do: do_intersection(xs, ys)
+
+  #         a---b
+  # c---d
   defp do_intersection([a.._b | _] = xs, [_c..d | ys]) when a > d, do: do_intersection(xs, ys)
-  defp do_intersection([a..b | xs], [c..d | _] = ys) when a < c and b < d do
+
+  # a---b
+  #   c---d
+  defp do_intersection([a..b | xs], [c..d | _] = ys) when a <= c and b <= d and c <= b do
     [c..b | do_intersection(xs, ys)]
   end
-  defp do_intersection([a..b | _] = xs, [c..d | ys]) when a > c and b > d do
+
+  #   a---b
+  # c---d
+  defp do_intersection([a..b | _] = xs, [c..d | ys]) when a > c and b > d and a <= d do
     [a..d | do_intersection(xs, ys)]
   end
+
+  #   a---b
+  # c-------d
   defp do_intersection([a..b | xs], [c..d | _] = ys) when a in c..d and b in c..d do
     [a..b | do_intersection(xs, ys)]
   end
+
+  # a-------b
+  #   c---d
   defp do_intersection([a..b | _] = xs, [c..d | ys]) when c in a..b and d in a..b do
     [c..d | do_intersection(xs, ys)]
   end
