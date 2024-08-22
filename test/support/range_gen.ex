@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Łukasz Niemier <#@hauleth.dev>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule RangeGen do
   import ExUnitProperties, only: [gen: 1]
   import StreamData

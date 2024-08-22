@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Łukasz Niemier <#@hauleth.dev>
+
+SPDX-License-Identifier: MIT
+-->
+
 # `RangeSet`
 
 Simple structure for storing set of Elixir's (integer) ranges.

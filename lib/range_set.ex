@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Łukasz Niemier <#@hauleth.dev>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule RangeSet do
   import Kernel, except: [max: 2, min: 2]
 

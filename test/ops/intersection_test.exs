@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Łukasz Niemier <#@hauleth.dev>
+#
+# SPDX-License-Identifier: MIT
+
 defmodule Ops.IntersectionTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
