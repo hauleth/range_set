@@ -28,7 +28,7 @@ defmodule RangeSet.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:stream_data, "~> 0.5.0", only: :test},
+      {:stream_data, "~> 1.0", only: :test},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
