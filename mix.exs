@@ -4,13 +4,18 @@ defmodule RangeSet.MixProject do
   def project do
     [
       app: :range_set,
-      version: "0.1.0",
+      version: "1.0.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [
-        ignore_modules: [RangeGen]
+        ignore_modules: [
+          Inspect.RangeSet,
+          Enumerable.RangeSet,
+          # Test Helpers
+          RangeGen
+        ]
       ]
     ]
   end

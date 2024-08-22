@@ -1,6 +1,6 @@
 # `RangeSet`
 
-Simple structure for storing set of Elixir's ranges.
+Simple structure for storing set of Elixir's (integer) ranges.
 
 ## Set operations (existing and planned)
 

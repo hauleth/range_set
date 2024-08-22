@@ -3,7 +3,7 @@ defmodule RangeGen do
   import StreamData
 
   def range do
-    gen(all(a <- integer(), b <- positive_integer(), do: a..(a + b - 1)))
+    gen(all(a <- integer(), b <- non_negative_integer(), do: a..(a + b)))
   end
 
   def range_set(options \\ []) do

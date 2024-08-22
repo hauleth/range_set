@@ -41,4 +41,13 @@ defmodule Ops.DifferenceTest do
       assert diff == @subject.difference(diff, q)
     end
   end
+
+  property "single element `a` is treated the same as range `a..a`" do
+    check all(p <- range_set(), a <- integer()) do
+      diff1 = @subject.difference(p, a)
+      diff2 = @subject.difference(p, a..a)
+
+      assert diff1 == diff2
+    end
+  end
 end

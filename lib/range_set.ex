@@ -148,9 +148,6 @@ defmodule RangeSet do
   def difference(%__MODULE__{} = set, %__MODULE__{ranges: ranges}),
     do: Enum.reduce(ranges, set, &difference(&2, &1))
 
-  def difference(%__MODULE__{} = set, list),
-    do: Enum.reduce(list, set, &difference(&2, &1))
-
   @doc """
   Adds new value to set.
   """

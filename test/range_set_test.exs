@@ -92,6 +92,36 @@ defmodule RangeSetTest do
         assert p == @subject.put(p, i)
       end
     end
+
+    property "integer after addition is in set" do
+      check all(set <- range_set(), a <- integer()) do
+        assert a in @subject.put(set, a)
+      end
+    end
+
+    property "adding new range makes all values from that range present in set" do
+      check all(set <- range_set(), r <- range()) do
+        set = @subject.put(set, r)
+
+        assert Enum.all?(r, &(&1 in set))
+      end
+    end
+
+    property "adding empty range is noop" do
+      check all(set <- range_set(), a..b <- range(), a != b) do
+        empty = b..a//1
+
+        assert set == @subject.put(set, empty)
+      end
+    end
+
+    property "adding reverse range is same a adding it 'normally'" do
+      check all(set <- range_set(), a..b = r <- range()) do
+        reverse = b..a//-1
+
+        assert @subject.put(set, reverse) == @subject.put(set, r)
+      end
+    end
   end
 
   describe "continuous?/1" do
