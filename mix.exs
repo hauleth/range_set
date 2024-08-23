@@ -9,6 +9,13 @@ defmodule RangeSet.MixProject do
     [
       app: :range_set,
       version: "1.0.0",
+      package: [
+        description: "Library providing utilities for working with non continuous sets/set ranges",
+        licenses: ~w[MIT],
+        links: %{
+          "GitHub" => "https://github.com/hauleth/range_set"
+        }
+      ],
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
