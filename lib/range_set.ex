@@ -83,7 +83,6 @@ defmodule RangeSet do
       ranges
       |> Enum.chunk_every(2, 1, :discard)
       |> Enum.flat_map(fn [_..a, b.._] -> [(a + 1)..(b - 1)] end)
-      |> squash()
 
     %__MODULE__{ranges: gaps}
   end
@@ -205,7 +204,7 @@ defmodule RangeSet do
   """
   @spec intersection(t(), t()) :: t()
   def intersection(%__MODULE__{ranges: a}, %__MODULE__{ranges: b}) do
-    new(do_intersection(a, b))
+    %__MODULE__{ranges: do_intersection(a, b)}
   end
 
   # Finish
@@ -258,15 +257,16 @@ defimpl Enumerable, for: RangeSet do
   def reduce(set, {:suspend, acc}, fun), do: {:suspended, acc, &reduce(set, &1, fun)}
   def reduce(%@for{ranges: []}, {:cont, acc}, _fun), do: {:done, acc}
 
-  def reduce(%@for{ranges: [a..a | rest]}, {:cont, acc}, fun) do
+  def reduce(%@for{ranges: [a..a//_ | rest]}, {:cont, acc}, fun) do
     reduce(%@for{ranges: rest}, fun.(a, acc), fun)
   end
 
-  def reduce(%@for{ranges: [a..b | rest]}, {:cont, acc}, fun) do
-    reduce(%@for{ranges: [(a + 1)..b | rest]}, fun.(a, acc), fun)
+  def reduce(%@for{ranges: [a..b//n | rest]}, {:cont, acc}, fun) do
+    reduce(%@for{ranges: [(a + n)..b | rest]}, fun.(a, acc), fun)
   end
 
   # TODO: Implement that using more performant method
+  def slice(%@for{ranges: [range]}), do: Enumerable.Range.slice(range)
   def slice(_), do: {:error, __MODULE__}
 end
 

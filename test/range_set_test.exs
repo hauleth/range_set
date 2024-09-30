@@ -138,6 +138,32 @@ defmodule RangeSetTest do
     end
   end
 
+  describe "gaps/1" do
+    property "returned value is proper RangeSet" do
+      check all(range <- range_set()) do
+        gaps = @subject.gaps(range)
+
+        assert gaps == @subject.new(gaps)
+      end
+    end
+
+    property "intersetion between gaps and set is empty" do
+      check all(set <- range_set()) do
+        gaps = @subject.gaps(set)
+
+        assert @subject.empty?(@subject.intersection(set, gaps))
+      end
+    end
+
+    property "union between gaps and set is continuous" do
+      check all(set <- range_set()) do
+        gaps = @subject.gaps(set)
+
+        assert @subject.continuous?(@subject.union(set, gaps))
+      end
+    end
+  end
+
   describe "member?/2" do
     property "value from range is present is set" do
       check all(a..b = r <- range(), i <- integer(a..b)) do
