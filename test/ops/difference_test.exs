@@ -62,4 +62,13 @@ defmodule Ops.DifferenceTest do
       assert diff1 == diff2
     end
   end
+
+  property "removing superset from set results in empty set" do
+    check all(a <- range_set(), not @subject.empty?(a)) do
+      min = @subject.min(a)
+      max = @subject.max(a)
+
+      assert @subject.empty?(@subject.difference(a, (min - 1)..(max + 1)))
+    end
+  end
 end
