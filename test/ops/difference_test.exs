@@ -36,7 +36,7 @@ defmodule Ops.DifferenceTest do
     end
   end
 
-  property "C ∖ (A ∩ B) = (C ∖ A) ∩ (C ∖ B)" do
+  property "C ∖ (A ∩ B) = (C ∖ A) ∪ (C ∖ B)" do
     check all(a <- range_set(), b <- range_set(), c <- range_set()) do
       c_ab = @subject.difference(c, @subject.intersection(a, b))
       ca_cb = @subject.union(@subject.difference(c, a), @subject.difference(c, b))
