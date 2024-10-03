@@ -90,7 +90,7 @@ defmodule RangeSetTest do
     end
 
     property "adding value in range is noop" do
-      check all(a..b = r <- range(), i <- integer(a..b)) do
+      check all(a..b//_ = r <- range(), i <- integer(a..b)) do
         p = @subject.new(r)
 
         assert p == @subject.put(p, i)
@@ -112,7 +112,7 @@ defmodule RangeSetTest do
     end
 
     property "adding empty range is noop" do
-      check all(set <- range_set(), a..b <- range(), a != b) do
+      check all(set <- range_set(), a..b//_ <- range(), a != b) do
         empty = b..a//1
 
         assert set == @subject.put(set, empty)
@@ -120,7 +120,7 @@ defmodule RangeSetTest do
     end
 
     property "adding reverse range is same a adding it 'normally'" do
-      check all(set <- range_set(), a..b = r <- range()) do
+      check all(set <- range_set(), a..b//_ = r <- range()) do
         reverse = b..a//-1
 
         assert @subject.put(set, reverse) == @subject.put(set, r)
@@ -166,7 +166,7 @@ defmodule RangeSetTest do
 
   describe "member?/2" do
     property "value from range is present is set" do
-      check all(a..b = r <- range(), i <- integer(a..b)) do
+      check all(a..b//_ = r <- range(), i <- integer(a..b)) do
         p = @subject.new(r)
 
         assert @subject.member?(p, i)
@@ -183,7 +183,7 @@ defmodule RangeSetTest do
       end
     end
 
-    property "for list of ranges its lenght is less or equal to sum of all range sizes" do
+    property "for list of ranges its length is less or equal to sum of all range sizes" do
       check all(rs <- list_of(range())) do
         p = @subject.new(rs)
         range_sizes_sum = Enum.reduce(rs, 0, & &2 + Range.size(&1))

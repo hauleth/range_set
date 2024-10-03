@@ -39,7 +39,7 @@ defmodule RangeSet do
   @spec min(t(), (() -> term())) :: integer() | term()
   def min(range_set, empty_callback \\ fn -> raise Enum.EmptyError end)
 
-  def min(%__MODULE__{ranges: [a.._ | _]}, _fun), do: a
+  def min(%__MODULE__{ranges: [a.._//_ | _]}, _fun), do: a
   def min(%__MODULE__{ranges: []}, fun), do: fun.()
 
   @doc """
@@ -59,7 +59,7 @@ defmodule RangeSet do
 
   def max(%__MODULE__{ranges: ranges}, fun) do
     case List.last(ranges) do
-      _..a -> a
+      _..a//1 -> a
       nil -> fun.()
     end
   end
@@ -82,7 +82,7 @@ defmodule RangeSet do
     gaps =
       ranges
       |> Enum.chunk_every(2, 1, :discard)
-      |> Enum.flat_map(fn [_..a, b.._] -> [(a + 1)..(b - 1)] end)
+      |> Enum.flat_map(fn [_..a//1, b.._//_] -> [(a + 1)..(b - 1)] end)
 
     %__MODULE__{ranges: gaps}
   end
@@ -135,7 +135,7 @@ defmodule RangeSet do
 
   def difference(%__MODULE__{ranges: ranges}, c..d//1) when c <= d do
     new_ranges =
-      Enum.flat_map(ranges, fn a..b ->
+      Enum.flat_map(ranges, fn a..b//1 ->
         cond do
           a in c..d and b in c..d -> []
           a < c and b in c..d -> [a..(c - 1)]
@@ -185,7 +185,7 @@ defmodule RangeSet do
   defp insert_sorted(val, []), do: val
   defp insert_sorted([], val), do: val
 
-  defp insert_sorted([a.._ = x | rest], [b.._ | _] = y) when a < b,
+  defp insert_sorted([a.._//_ = x | rest], [b.._//_ | _] = y) when a < b,
     do: [x | insert_sorted(rest, y)]
 
   defp insert_sorted(rest, [y | ys]),
@@ -194,7 +194,7 @@ defmodule RangeSet do
   defp squash([]), do: []
   defp squash([_] = list), do: list
 
-  defp squash([a..b, c..d | rest]) when b >= c - 1,
+  defp squash([a..b//_, c..d//_ | rest]) when b >= c - 1,
     do: squash([a..Kernel.max(b, d) | rest])
 
   defp squash([x | rest]), do: [x | squash(rest)]
@@ -217,33 +217,33 @@ defmodule RangeSet do
 
   # a---b
   #        c---d
-  defp do_intersection([_a..b | xs], [c.._d | _] = ys) when b < c, do: do_intersection(xs, ys)
+  defp do_intersection([_a..b//_ | xs], [c.._d//_ | _] = ys) when b < c, do: do_intersection(xs, ys)
 
   #         a---b
   # c---d
-  defp do_intersection([a.._b | _] = xs, [_c..d | ys]) when a > d, do: do_intersection(xs, ys)
+  defp do_intersection([a.._b//_ | _] = xs, [_c..d//_ | ys]) when a > d, do: do_intersection(xs, ys)
 
   # a---b
   #   c---d
-  defp do_intersection([a..b | xs], [c..d | _] = ys) when a <= c and b <= d and c <= b do
+  defp do_intersection([a..b//1 | xs], [c..d//1 | _] = ys) when a <= c and b <= d and c <= b do
     [c..b | do_intersection(xs, ys)]
   end
 
   #   a---b
   # c---d
-  defp do_intersection([a..b | _] = xs, [c..d | ys]) when a > c and b > d and a <= d do
+  defp do_intersection([a..b//1 | _] = xs, [c..d//1 | ys]) when a > c and b > d and a <= d do
     [a..d | do_intersection(xs, ys)]
   end
 
   #   a---b
   # c-------d
-  defp do_intersection([a..b | xs], [c..d | _] = ys) when a in c..d and b in c..d do
+  defp do_intersection([a..b//1 | xs], [c..d//1 | _] = ys) when a in c..d//1 and b in c..d//1 do
     [a..b | do_intersection(xs, ys)]
   end
 
   # a-------b
   #   c---d
-  defp do_intersection([a..b | _] = xs, [c..d | ys]) when c in a..b and d in a..b do
+  defp do_intersection([a..b//1 | _] = xs, [c..d//1 | ys]) when c in a..b//1 and d in a..b//1 do
     [c..d | do_intersection(xs, ys)]
   end
 end
